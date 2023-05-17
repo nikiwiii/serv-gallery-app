@@ -1,8 +1,8 @@
 import React from 'react';
-import { Image, StyleSheet, Pressable, Dimensions } from 'react-native';
+import { Image, StyleSheet, Pressable, Dimensions, Text } from 'react-native';
 
 class Item extends React.Component {
-    constructor(props){
+    constructor(props) {
         super(props)
         this.state = {
             selected: false
@@ -10,16 +10,17 @@ class Item extends React.Component {
     }
     render() {
         const img = this.props.loc
-        return(<Pressable onPress={() => this.showImg()} onLongPress={() => this.select()}><Image
-            style={[this.props.cols===1 ? styles.big : styles.image, this.getStyle()]}
+        return (<Pressable onPress={() => this.showImg()} onLongPress={() => this.select()}><Image
+            style={[this.props.cols === 1 ? styles.big : styles.image, this.getStyle()]}
             source={{ uri: img }}
-        /></Pressable>)
+        /><Text style={{ position: 'absolute', left: 10, top: 5, color: 'rgba(255, 255, 255, 0.6)' }}>{this.props.ids}</Text>
+        </Pressable>)
     }
     showImg() {
-        this.props.navigation.navigate('bigphoto', {loc: this.props.loc, ids: this.props.ids, wid: this.props.wid, hig: this.props.hig})
+        this.props.navigation.navigate('bigphoto', { loc: this.props.loc, ids: this.props.ids, wid: this.props.wid, hig: this.props.hig })
     }
     select() {
-        if(!this.state.selected){
+        if (!this.state.selected) {
             this.props.select(this.props.ids)
             this.setState({
                 selected: true
@@ -33,8 +34,8 @@ class Item extends React.Component {
         }
     }
     getStyle() {
-        if(this.state.selected) {
-            return {borderWidth: 5, borderColor: 'limegreen', opacity: .7}
+        if (this.state.selected) {
+            return { borderWidth: 5, borderColor: 'limegreen', opacity: .7 }
         }
     }
 }
@@ -52,15 +53,15 @@ const styles = StyleSheet.create({
         borderRadius: 20
     },
     image: {
-        width: Dimensions.get("window").width/6,
-        height: Dimensions.get("window").width/6,
+        width: Dimensions.get("window").width / 6,
+        height: Dimensions.get("window").width / 6,
         borderRadius: 10,
-        margin: Dimensions.get("window").width/60,
+        margin: Dimensions.get("window").width / 60,
     },
     big: {
-        width: Dimensions.get("window").width*.9,
+        width: Dimensions.get("window").width * .9,
         height: 150,
-        margin: Dimensions.get("window").width*.05,
+        margin: Dimensions.get("window").width * .05,
         marginBottom: 0,
         borderRadius: 10,
     },
