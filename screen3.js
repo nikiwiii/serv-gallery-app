@@ -1,9 +1,8 @@
 import React from 'react';
-import { Text, View, StyleSheet, BackHandler, ToastAndroid, ScrollView, Animated } from 'react-native'
+import { Text, View, StyleSheet, BackHandler, ToastAndroid, ScrollView, Animated, Dimensions, DeviceEventEmitter } from 'react-native'
 import { Camera } from "expo-camera";
 import * as MediaLibrary from "expo-media-library";
 import Pressable from 'react-native/Libraries/Components/Pressable/Pressable';
-import { DeviceEventEmitter } from "react-native"
 import RadioGroup from './RadioGroup';
 
 class Screen3 extends React.Component {
@@ -12,14 +11,41 @@ class Screen3 extends React.Component {
     this.state = {
       hasCameraPermission: null,         // przydzielone uprawnienia do używania kamery
       type: Camera.Constants.Type.back,  // typ kamery
-      ratio: null,
-      whiteBalance: null,
-      pictureSize: null,
-      flashMode: null
+      ratio: "16:9",
+      wb: "auto",
+      ps: "1920x1080",
+      fm: "off",
+      ratios: [],
+      sizes: ['2'],
+      settingsOpen: false 
     };
   }
   camera
   async componentDidMount() {
+    DeviceEventEmitter.addListener('newChosen', (data) => {
+      switch (data.setting) {
+        case 'CAMERA RATIO':
+          this.setState({
+            ratio: data.val
+          })
+          break
+        case 'WHITE BALANCE':
+          this.setState({
+            wb: data.val
+          })
+          break
+        case 'PICTURE SIZES':
+          this.setState({
+            ps: data.val
+          })
+          break
+        case 'FLASH':
+          this.setState({
+            fm: data.val
+          })
+          break
+      }
+    })
     let { status } = await Camera.requestCameraPermissionsAsync();
     this.setState({ hasCameraPermission: status == 'granted' });
     BackHandler.addEventListener("hardwareBackPress", () => { DeviceEventEmitter.emit("refreshevent", {}) });
@@ -48,9 +74,22 @@ class Screen3 extends React.Component {
 
   async getSizes() {
     if (this.camera) {
-      const sizes = await this.camera.getAvailablePictureSizesAsync()
-      return sizes
+      this.setState({
+        sizes: (await this.camera.getAvailablePictureSizesAsync(this.state.ratio))
+      })
     }
+  }
+  
+  async getRatios() {
+    if (this.camera) {
+      this.setState({
+        ratios: (await this.camera.getSupportedRatiosAsync())
+      })
+    }
+  }
+
+  openSettings() {
+    this.state.settingsOpen ? this.setState({settingsOpen: false}) : this.setState({settingsOpen: true})
   }
 
   render() {
@@ -71,30 +110,37 @@ class Screen3 extends React.Component {
             ratio={this.state.ratio}
             whiteBalance={this.state.wb}
             pictureSize={this.state.ps}
-            flashMode={this.state.fm}>
+            flashMode={this.state.fm}
+            onCameraReady={() => {
+              this.getRatios()
+              this.getSizes()}}>
 
             <View style={{ flex: 1, display: 'flex', flexDirection: 'row', justifyContent: 'space-around' }}>
               <Pressable onPress={() => this.photo()} style={styles.buttons}><Text style={styles.text}>+</Text></Pressable>
               <Pressable onPress={() => this.flip()} style={styles.buttons}><Text style={[styles.text, { paddingBottom: 11 }]}>↺</Text></Pressable>
+              <Pressable onPress={() => this.openSettings()} style={styles.buttons}><Text style={[styles.text, { fontSize: 40 }]}>⚙</Text></Pressable>
             </View>
           </Camera>
-          <ScrollView style={{ position: 'absolute' }}>
+          <ScrollView style={{ position: 'absolute', top: this.state.settingsOpen ? 0 : Dimensions.get('window').height, height: Dimensions.get('window').height*.92, backgroundColor: 'rgba(0,0,0,0.5)', padding: 20}}>
             <RadioGroup
               settingsTitle="WHITE BALANCE"
               settingsArr={Camera.Constants.WhiteBalance}
+              chosen={this.state.wb}
             />
             <RadioGroup
               settingsTitle="FLASH"
               settingsArr={Camera.Constants.FlashMode}
+              chosen={this.state.fm}
             />
             <RadioGroup
               settingsTitle="CAMERA RATIO"
-              settingsArr={["4:3", "16:9"]}
+              settingsArr={this.state.ratios}
+              chosen={this.state.ratio}
             />
             <RadioGroup
               settingsTitle="PICTURE SIZES"
-              // settingsArr={() => this.getSizes()}
-              settingsArr={['yuh']}
+              settingsArr={this.state.sizes}
+              chosen={this.state.ps}
             />
           </ScrollView>
         </View>

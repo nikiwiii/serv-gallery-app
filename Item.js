@@ -1,5 +1,5 @@
 import React from 'react';
-import { Image, StyleSheet, Pressable, Dimensions, Text } from 'react-native';
+import { Image, StyleSheet, Pressable, Dimensions } from 'react-native';
 
 class Item extends React.Component {
     constructor(props) {
@@ -13,7 +13,7 @@ class Item extends React.Component {
         return (<Pressable onPress={() => this.showImg()} onLongPress={() => this.select()}><Image
             style={[this.props.cols === 1 ? styles.big : styles.image, this.getStyle()]}
             source={{ uri: img }}
-        /><Text style={{ position: 'absolute', left: 10, top: 5, color: 'rgba(255, 255, 255, 0.6)' }}>{this.props.ids}</Text>
+        />
         </Pressable>)
     }
     showImg() {
