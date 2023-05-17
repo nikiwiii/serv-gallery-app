@@ -16,7 +16,7 @@ class Screen3 extends React.Component {
       ps: "1920x1080",
       fm: "off",
       ratios: [],
-      sizes: ['2'],
+      sizes: [],
       settingsOpen: false 
     };
   }
