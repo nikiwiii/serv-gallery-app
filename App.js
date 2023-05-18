@@ -1,4 +1,3 @@
-import Screen1 from './screen1'
 import Screen2 from './screen2'
 import Screen3 from './screen3'
 import Screen4 from './screen4'
@@ -11,18 +10,13 @@ const Stack = createNativeStackNavigator();
 class App extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {
-    }
+    this.state = {}
   }
 
   render() {
     return (
     <NavigationContainer theme={DarkTheme}>
       <Stack.Navigator>
-        <Stack.Screen
-          name="log in"
-          component={Screen1}
-          options={{title: 'Welcome'}}/>
 
         <Stack.Screen
           name="list"

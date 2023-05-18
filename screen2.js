@@ -1,8 +1,9 @@
 import React from 'react';
-import { View, StyleSheet, Pressable, Text, FlatList, ActivityIndicator, Dimensions, ToastAndroid } from 'react-native';
+import { View, StyleSheet, Pressable, Text, FlatList, ActivityIndicator, Dimensions, ToastAndroid, Animated } from 'react-native';
 import Item from './Item';
 import * as MediaLibrary from "expo-media-library";
 import {DeviceEventEmitter} from "react-native"
+import SlidingUpPanel from "rn-sliding-up-panel";
 
 class Screen2 extends React.Component {
     constructor(props) {
@@ -13,7 +14,10 @@ class Screen2 extends React.Component {
         height: Dimensions.get("window").height,
         photos: [],
         numColumns: 5,
-        selects: []
+        selects: [],
+        _draggedValue: new Animated.Value(45),
+        draggableRange: { top: Dimensions.get("window").height - 50, bottom: 45 },
+        up: false
       }
     }
     async componentDidMount(){
@@ -42,6 +46,7 @@ class Screen2 extends React.Component {
               loading: false
           })
           DeviceEventEmitter.addListener("refreshevent", () => {this.refresh()});
+          this.state.up ? this._panel.show() : null
     }
 
     async refresh() {
@@ -67,26 +72,61 @@ class Screen2 extends React.Component {
         })
     }
 
+    endDrag() {
+        this.setState({up:true})
+    }
+
     render(){
-        return(<View style={styles.centered}>
-                <View style={styles.flex}>
-                    <Pressable style={styles.buttons} onPress={() => this.delSelected()}><Text style={styles.text}>DELETE</Text></Pressable> 
-                    <Pressable style={styles.buttons} onPress={() => this.makePhoto()}><Text style={styles.text}>CAMERA</Text></Pressable>
-                    <Pressable style={styles.buttons} onPress={() => this.layout()}><Text style={styles.text}>LAYOUT</Text></Pressable> 
+        return(<View style={{flex:1}}>
+            <Text style={styles.backgroundTextSmall}>GALLERY</Text>
+            <Text style={styles.backgroundText}>GAL</Text>
+            <View style={styles.titleCard}>
+                <View style={styles.colored}>
+                    <Text style={styles.rt}>G</Text>
+                    <Text style={styles.rt}>A</Text>
+                    <Text style={styles.rt}>L</Text>
+                    <Text style={styles.rt}>L</Text>
+                    <Text style={styles.rt}>E</Text>
+                    <Text style={styles.rt}>R</Text>
+                    <Text style={styles.rt}>Y</Text>
+                    <Text style={styles.rt}>Y</Text>
                 </View>
-                {
-                    this.state.loading ?
-                        <ActivityIndicator size="large" color="white" />
-                        :
-                        null
-                }
-                <FlatList
-                    style={styles.list}
-                    data={this.state.photos}
-                    renderItem={({item}) => <Item loc={item.uri} ids={item.id} wid={item.width} hig={item.height} rem={(x) => {this.removeSelected(x)}} select={(x) => {this.addSelected(x)}} cols={this.state.numColumns} navigation={this.props.navigation} />}
-                    numColumns={this.state.numColumns}
-                    key={this.state.numColumns}
-                />
+                <Pressable style={styles.goButton} onPress={() => this.register()}>
+                    <Text style={styles.goText} onPress={() => {this._panel.show(this.state.height - 100);this.setState({up:true})}}>GO!</Text>
+                </Pressable>
+            </View>
+            <Text style={[styles.backgroundText, {letterSpacing: -2}]}>ERY</Text>
+            <Text style={styles.backgroundText}>GAL</Text>
+            <Text style={[styles.backgroundText, {letterSpacing: -2}]}>ERY</Text>
+        <SlidingUpPanel
+            ref={c => (this._panel = c)}
+            draggableRange={this.state.draggableRange}
+            animatedValue={this.state._draggedValue}
+            snappingPoints={[360]}
+            height={this.state.height*.85}
+            onMomentumDragEnd={() => this.endDrag()}
+            friction={0.5}>
+                <View style={{backgroundColor: '#171717', borderRadius: 20}}>
+                    <View style={{backgroundColor: 'grey', width: 50, height: 5, borderRadius: 5, margin: 20, alignSelf: 'center'}}></View>
+                    <View style={styles.flex}>
+                        <Pressable style={styles.buttons} onPress={() => this.delSelected()}><Text style={styles.text}>DELETE</Text></Pressable> 
+                        <Pressable style={styles.buttons} onPress={() => this.makePhoto()}><Text style={styles.text}>CAMERA</Text></Pressable>
+                        <Pressable style={styles.buttons} onPress={() => this.layout()}><Text style={styles.text}>LAYOUT</Text></Pressable> 
+                    </View>
+                    {
+                        this.state.loading ?
+                            <ActivityIndicator size="large" color="white" />
+                            :
+                            null
+                    }
+                    <FlatList
+                        data={this.state.photos}
+                        renderItem={({item}) => <Item loc={item.uri} ids={item.id} wid={item.width} hig={item.height} rem={(x) => {this.removeSelected(x)}} select={(x) => {this.addSelected(x)}} cols={this.state.numColumns} navigation={this.props.navigation} />}
+                        numColumns={this.state.numColumns}
+                        key={this.state.numColumns}
+                    />
+                </View>
+            </SlidingUpPanel>
             </View>)
     }
     makePhoto = async() => {
@@ -115,13 +155,8 @@ class Screen2 extends React.Component {
 
 const styles = StyleSheet.create({
     centered: {
-        flex: 1,
         display: 'flex',
-        flexDirection: 'column',
-        backgroundColor: '#171717'
-    },
-    list: {
-        flex: 1
+        flexDirection: 'column'
     },
     flex: {
         display: 'flex',
@@ -142,6 +177,57 @@ const styles = StyleSheet.create({
         color: 'limegreen',
         fontWeight: 'bold',
         fontSize: 20
+    },
+    colored: {
+      width: Dimensions.get('window').width*.5,
+      display: 'flex',
+      flexDirection: 'row',
+      flexWrap: 'wrap'
+    },
+    rt: {
+      fontSize: 65,
+      color: 'limegreen',
+      fontWeight: 'bold',
+      lineHeight: 70,
+      height: 50
+    },
+    goText: {
+        width: Dimensions.get('window').width*.49, 
+        fontSize: 80, 
+        lineHeight: 102.5, 
+        textAlign: 'center', 
+        color: 'limegreen', 
+        fontWeight: 'bold'
+    },
+    titleCard: {
+        height: 100,
+        width: '100%',
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center'
+    },
+    goButton: {
+        borderColor: 'limegreen',
+        borderWidth: 1,
+        borderRadius: 25,
+        backgroundColor: 'transparent'
+    },
+    backgroundText: {
+        color: 'rgba(255,255,255,.05)', 
+        fontSize: 170, 
+        fontWeight: 'bold', 
+        lineHeight: 180, 
+        height: 135,
+        marginLeft: -6,
+        letterSpacing: 2,
+    },
+    backgroundTextSmall: {
+        color: 'rgba(255,255,255,.05)', 
+        fontSize: 75, 
+        fontWeight: 'bold', 
+        lineHeight: 84, 
+        height: 65
     }
 });
 

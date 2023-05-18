@@ -17,7 +17,8 @@ class Screen3 extends React.Component {
       fm: "off",
       ratios: [],
       sizes: [],
-      settingsOpen: false 
+      settingsOpen: true,
+      pos: new Animated.Value(-500)
     };
   }
   camera
@@ -87,9 +88,22 @@ class Screen3 extends React.Component {
       })
     }
   }
-
   openSettings() {
-    this.state.settingsOpen ? this.setState({settingsOpen: false}) : this.setState({settingsOpen: true})
+    let toPos
+    this.setState({
+      settingsOpen: !this.state.settingsOpen
+    })
+    this.state.settingsOpen ? toPos = 0 : toPos = -500
+    Animated.spring(
+        this.state.pos,
+        {
+            toValue: toPos,
+            velocity: 1,
+            tension: 0,
+            friction: 10,
+            useNativeDriver:true
+        }
+    ).start();
   }
 
   render() {
@@ -114,35 +128,43 @@ class Screen3 extends React.Component {
             onCameraReady={() => {
               this.getRatios()
               this.getSizes()}}>
+            <Pressable onPress={() => this.openSettings()} style={[styles.buttons, {position: 'absolute', right: 20, top: 20, height: 50, width: 50}]}><Text style={[styles.text, { fontSize: 30, color: 'white' }]}>⚙</Text></Pressable>
 
             <View style={{ flex: 1, display: 'flex', flexDirection: 'row', justifyContent: 'space-around' }}>
               <Pressable onPress={() => this.photo()} style={styles.buttons}><Text style={styles.text}>+</Text></Pressable>
               <Pressable onPress={() => this.flip()} style={styles.buttons}><Text style={[styles.text, { paddingBottom: 11 }]}>↺</Text></Pressable>
-              <Pressable onPress={() => this.openSettings()} style={styles.buttons}><Text style={[styles.text, { fontSize: 40 }]}>⚙</Text></Pressable>
             </View>
           </Camera>
-          <ScrollView style={{ position: 'absolute', top: this.state.settingsOpen ? 0 : Dimensions.get('window').height, height: Dimensions.get('window').height*.92, backgroundColor: 'rgba(0,0,0,0.5)', padding: 20}}>
+          <Animated.ScrollView style={[styles.settings,{
+                          transform: [
+                              { translateX: this.state.pos }
+                          ]
+                      }]}>
             <RadioGroup
               settingsTitle="WHITE BALANCE"
               settingsArr={Camera.Constants.WhiteBalance}
               chosen={this.state.wb}
+              key={1}
             />
             <RadioGroup
               settingsTitle="FLASH"
               settingsArr={Camera.Constants.FlashMode}
               chosen={this.state.fm}
+              key={2}
             />
             <RadioGroup
               settingsTitle="CAMERA RATIO"
               settingsArr={this.state.ratios}
               chosen={this.state.ratio}
+              key={3}
             />
             <RadioGroup
               settingsTitle="PICTURE SIZES"
               settingsArr={this.state.sizes}
               chosen={this.state.ps}
+              key={4}
             />
-          </ScrollView>
+          </Animated.ScrollView>
         </View>
       );
     }
@@ -166,6 +188,16 @@ const styles = StyleSheet.create({
     fontSize: 70,
     alignSelf: 'center',
     textAlign: 'center'
+  },
+  settings: { 
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    maxWidth: Dimensions.get('window').width*.5,
+    height: Dimensions.get('window').height*.925, 
+    backgroundColor: 'rgba(0,0,0,0.5)', 
+    padding: 20
   }
 })
 
