@@ -17,11 +17,12 @@ class Screen4 extends React.Component {
           style={[styles.image,{
             width: '95%',
             height: undefined,
-            maxHeight: Dimensions.get('window').height*.8,
+            maxHeight: Dimensions.get('window').height*.78,
             aspectRatio: this.props.route.params.wid/this.props.route.params.hig,
           }]}
           source={{ uri: this.props.route.params.loc }}
       />
+      <Text style={{color: 'white', textAlign: 'center'}}>{this.props.route.params.res}</Text>
       <View style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-around'}}>
         <Pressable onPress={() => this.delete()} style={styles.buttons}>
           <Text style={styles.text}>DELETE</Text>

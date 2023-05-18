@@ -17,7 +17,7 @@ class Item extends React.Component {
         </Pressable>)
     }
     showImg() {
-        this.props.navigation.navigate('bigphoto', { loc: this.props.loc, ids: this.props.ids, wid: this.props.wid, hig: this.props.hig })
+        this.props.navigation.navigate('bigphoto', { res: this.props.res, loc: this.props.loc, ids: this.props.ids, wid: this.props.wid, hig: this.props.hig })
     }
     select() {
         if (!this.state.selected) {

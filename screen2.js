@@ -121,7 +121,7 @@ class Screen2 extends React.Component {
                     }
                     <FlatList
                         data={this.state.photos}
-                        renderItem={({item}) => <Item loc={item.uri} ids={item.id} wid={item.width} hig={item.height} rem={(x) => {this.removeSelected(x)}} select={(x) => {this.addSelected(x)}} cols={this.state.numColumns} navigation={this.props.navigation} />}
+                        renderItem={({item}) => <Item res={`${item.width} x ${item.height}`} loc={item.uri} ids={item.id} wid={item.width} hig={item.height} rem={(x) => {this.removeSelected(x)}} select={(x) => {this.addSelected(x)}} cols={this.state.numColumns} navigation={this.props.navigation} />}
                         numColumns={this.state.numColumns}
                         key={this.state.numColumns}
                     />
