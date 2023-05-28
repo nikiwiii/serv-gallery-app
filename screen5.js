@@ -1,68 +1,75 @@
 import React from 'react';
-import { Text, View, StyleSheet, BackHandler, ToastAndroid, Dimensions, DeviceEventEmitter } from 'react-native'
-import { Camera } from "expo-camera";
-import * as MediaLibrary from "expo-media-library";
-import Pressable from 'react-native/Libraries/Components/Pressable/Pressable';
+import { Text, View, StyleSheet, TextInput, Dimensions, Pressable, DeviceEventEmitter } from 'react-native'
 
 class Screen5 extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            hasCameraPermission: null,         // przydzielone uprawnienia do używania kamery
-            type: Camera.Constants.Type.back,  // typ kamery
+            ip: '192.168.xx.xxx',
+            port: '4000',
+            open: false
         };
     }
-    camera
-    async componentDidMount() {
-        let { status } = await Camera.requestCameraPermissionsAsync();
-        this.setState({ hasCameraPermission: status == 'granted' });
-        BackHandler.addEventListener("hardwareBackPress", () => { DeviceEventEmitter.emit("refreshevent", {}) });
-    }
+    ip = '192.168.xx.xxx'
+    port = '4000'
 
-    flip() {
-        this.setState({
-            type: this.state.type === Camera.Constants.Type.back
-                ? Camera.Constants.Type.front
-                : Camera.Constants.Type.back,
-        });
-    }
-
-    async photo() {
-        if (this.camera) {
-            let foto = await this.camera.takePictureAsync();
-            let asset = await MediaLibrary.createAssetAsync(foto.uri); // domyślnie zapisuje w folderze DCIM
-            ToastAndroid.showWithGravity(
-                'photo made',
-                ToastAndroid.SHORT,
-                ToastAndroid.CENTER
-            );
-            DeviceEventEmitter.emit("refreshevent", {})
-        }
+    sendData() {
+        this.setState({ip:this.ip, port:this.port})
+        DeviceEventEmitter.emit("newServerData", {ip: this.ip, port: this.port})
     }
 
     render() {
-        const hasCameraPermission = this.state.hasCameraPermission; // podstawienie zmiennej ze state
-        if (hasCameraPermission == null) {
-            return (<View />);
-        } else if (hasCameraPermission == false) {
-            return (<Text>brak dostępu do kamery</Text>);
-        } else {
-            return (
-                <View style={[styles.centered, { flex: 1 }]}>
-                    <Text style={styles.text}>Obecnie zapisane IP to:</Text>
-                    <Text style={styles.text}>jakies IP</Text>
-                    <Text style={styles.text}>Obecnie zapisany PORT to:</Text>
-                    <Text style={styles.text}>jakis PORT</Text>
-                    <Pressable style={styles.buttons}>
-                        <Text style={[styles.text, { fontSize: 30, fontWeight: 'bold' }]}>PODAJ NOWE DANE</Text>
-                    </Pressable>
+        return (
+            <View style={[styles.centered, { flex: 1 }]}>
+                <Text style={styles.text}>Obecnie zapisane IP to:</Text>
+                <Text style={[styles.text, {color: 'gainsboro'}]}>{this.state.ip}</Text>
+                <Text style={styles.text}>Obecnie zapisany PORT to:</Text>
+                <Text style={[styles.text, {color: 'gainsboro'}]}>{this.state.port}</Text>
+                <Pressable style={styles.buttons} 
+                onPress={() => { 
+                    this.setState({open: !this.state.open}); 
+                    this.state.open ? this.sendData() : null }}>
+                    <Text style={[styles.text, { fontSize: 30, fontWeight: 'bold' }]}>{this.state.open ? 'ZAPISZ NOWE DANE' : 'PODAJ NOWE DANE'}</Text>
+                </Pressable>
+
+
+                <View style={[styles.dialog, {top: this.state.open ? 250 : Dimensions.get('window').height,}]}>
+                    <Text style={styles.text}>wpisz IP:</Text>
+                    <TextInput
+                        placeholderTextColor="dimgray" 
+                        style={styles.input}
+                        onChangeText={newText => this.ip = newText}
+                        ref={input => {this.input1 = input}}
+                        defaultValue={this.ip}>
+                    </TextInput>
+                    <Text style={styles.text}>wpisz PORT:</Text>
+                    <TextInput
+                        placeholderTextColor="dimgray" 
+                        style={styles.input}
+                        onChangeText={newText => this.port = newText}
+                        ref={input => {this.input2 = input}}
+                        defaultValue={this.port}>
+                    </TextInput>
                 </View>
-            );
-        }
+            </View>
+        );
     }
 }
 
 const styles = StyleSheet.create({
+    dialog: {
+        position: 'absolute',
+        width: '100%',
+        display: 'flex',
+        justifyContent: 'center',
+        borderRadius: 10,
+        backgroundColor: 'rgb(30, 30, 30)'
+    },
+    input: {
+        alignSelf: 'center',
+        textAlign: 'center',
+        color: 'white'
+    },
     centered: {
         display: 'flex',
         flexDirection: 'column',

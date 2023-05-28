@@ -17,7 +17,9 @@ class Screen2 extends React.Component {
             selects: [],
             _draggedValue: new Animated.Value(45),
             draggableRange: { top: Dimensions.get("window").height - 50, bottom: 45 },
-            up: false
+            up: false,
+            ip: '192.168.xx.xxx',
+            port: '4000'
         }
     }
     async componentDidMount() {
@@ -46,6 +48,10 @@ class Screen2 extends React.Component {
             loading: false
         })
         DeviceEventEmitter.addListener("refreshevent", () => { this.refresh() });
+        DeviceEventEmitter.addListener("newServerData", (data) => { 
+            this.setState({ip: data.ip, port: data.port})
+            console.log(data);
+         })
         this.state.up ? this._panel.show() : null
     }
 
@@ -104,15 +110,14 @@ class Screen2 extends React.Component {
                 animatedValue={this.state._draggedValue}
                 snappingPoints={[360]}
                 height={this.state.height * .85}
-                onMomentumDragEnd={() => this.endDrag()}
                 friction={0.5}>
-                <View style={{ backgroundColor: '#171717', borderRadius: 20 }}>
+                <View style={{ backgroundColor: '#171717', borderRadius: 20, flex: 1 }}>
                     <View style={{ backgroundColor: 'grey', width: 50, height: 5, borderRadius: 5, margin: 20, alignSelf: 'center' }}></View>
                     <View style={styles.flex}>
                         <Pressable style={styles.buttons} onPress={() => this.delSelected()}><Text style={styles.text}>DELETE</Text></Pressable>
                         <Pressable style={styles.buttons} onPress={() => this.makePhoto()}><Text style={styles.text}>CAMERA</Text></Pressable>
                         <Pressable style={styles.buttons} onPress={() => this.layout()}><Text style={styles.text}>LAYOUT</Text></Pressable>
-                        <Pressable style={styles.buttons} onPress={() => { }}><Text style={styles.text}>UPLOAD SELECTED</Text></Pressable>
+                        <Pressable style={styles.buttons} onPress={() => this.uploadSelects()}><Text style={styles.text}>UPLOAD SELECTED</Text></Pressable>
                         <Pressable style={styles.buttons} onPress={() => this.goToSettings()}><Text style={styles.text}>SETTINGS</Text></Pressable>
                     </View>
                     {
@@ -123,7 +128,7 @@ class Screen2 extends React.Component {
                     }
                     <FlatList
                         data={this.state.photos}
-                        renderItem={({ item }) => <Item res={`${item.width} x ${item.height}`} loc={item.uri} ids={item.id} wid={item.width} hig={item.height} rem={(x) => { this.removeSelected(x) }} select={(x) => { this.addSelected(x) }} cols={this.state.numColumns} navigation={this.props.navigation} />}
+                        renderItem={({ item }) => <Item address={"http://" + this.state.ip + ":" + this.state.port + "/api/send"} res={`${item.width} x ${item.height}`} loc={item.uri} ids={item.id} wid={item.width} hig={item.height} rem={(x) => { this.removeSelected(x) }} select={(x) => { this.addSelected(x) }} cols={this.state.numColumns} navigation={this.props.navigation} />}
                         numColumns={this.state.numColumns}
                         key={this.state.numColumns}
                     />
@@ -132,7 +137,7 @@ class Screen2 extends React.Component {
         </View>)
     }
     makePhoto = async () => {
-        this.props.navigation.navigate('camera')
+        this.props.navigation.navigate('camera', { address: "http://" + this.state.ip + ":" + this.state.port + "/api/send" })
     }
     addSelected(selectedPath) {
         this.setState({
@@ -152,6 +157,31 @@ class Screen2 extends React.Component {
             selects: []
         })
         this.refresh()
+    }
+    async uploadSelects() {
+        if(!this.state.ip.includes('x')){
+            this.state.selects.forEach(async e => {
+                const photo = await MediaLibrary.getAssetInfoAsync(e)
+                const data = new FormData()
+                data.append('photo', {
+                    uri: photo.uri,
+                    type: 'image/jpeg',
+                    name: photo.filename
+                })
+                // console.log(photo);
+                fetch("http://" + this.state.ip + ":" + this.state.port + "/api/send", {
+                    method: 'POST',
+                    body: data
+                })
+            });
+        }
+        else {
+            ToastAndroid.showWithGravity(
+                'go to settings and type in your ip',
+                ToastAndroid.SHORT,
+                ToastAndroid.CENTER
+            );
+        }
     }
 }
 
@@ -182,7 +212,7 @@ const styles = StyleSheet.create({
     text: {
         color: 'limegreen',
         fontWeight: 'bold',
-        fontSize: 12,
+        fontSize: 9,
         textAlign: 'center'
     },
     colored: {

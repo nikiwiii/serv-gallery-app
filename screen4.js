@@ -30,7 +30,7 @@ class Screen4 extends React.Component {
         <Pressable onPress={() => this.share(this.props.route.params.loc)} style={styles.buttons}>
           <Text style={styles.text}>SHARE</Text>
         </Pressable>
-        <Pressable onPress={() => { }} style={styles.buttons}>
+        <Pressable onPress={() => this.upload()} style={styles.buttons}>
           <Text style={styles.text}>UPLOAD</Text>
         </Pressable>
       </View>
@@ -54,6 +54,29 @@ class Screen4 extends React.Component {
     else {
       ToastAndroid.showWithGravity(
         'sharing unavailable',
+        ToastAndroid.SHORT,
+        ToastAndroid.CENTER
+      );
+    }
+  }
+  async upload() {
+    if(!this.props.route.params.address.includes('x')){
+      const photo = await MediaLibrary.getAssetInfoAsync(this.props.route.params.ids)
+      const data = new FormData()
+      data.append('photo', {
+          uri: photo.uri,
+          type: 'image/jpeg',
+          name: photo.filename
+      })
+      // console.log(photo);
+      fetch(this.props.route.params.address, {
+          method: 'POST',
+          body: data
+      })
+    }
+    else {
+      ToastAndroid.showWithGravity(
+        'go to settings and type in your ip',
         ToastAndroid.SHORT,
         ToastAndroid.CENTER
       );

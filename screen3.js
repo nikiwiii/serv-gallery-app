@@ -3,6 +3,7 @@ import { Text, View, StyleSheet, BackHandler, ToastAndroid, Dimensions, DeviceEv
 import { Camera } from "expo-camera";
 import * as MediaLibrary from "expo-media-library";
 import Pressable from 'react-native/Libraries/Components/Pressable/Pressable';
+import * as ImagePicker from 'expo-image-picker';
 
 class Screen3 extends React.Component {
   constructor(props) {
@@ -55,7 +56,7 @@ class Screen3 extends React.Component {
             }}
             style={{ flex: 1 }}
           >
-            <Pressable onPress={() => { }} style={[styles.buttons, { position: 'absolute', right: 20, top: 20, height: 50, width: 50 }]}>
+            <Pressable onPress={() => this.openPicker()} style={[styles.buttons, { position: 'absolute', right: 20, top: 20, height: 50, width: 50 }]}>
               <Text style={[styles.text, { lineHeight: 60, paddingRight: 2.7 }]}>⇣</Text>
             </Pressable>
 
@@ -67,6 +68,40 @@ class Screen3 extends React.Component {
         </View>
       );
     }
+  }
+  async openPicker() {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+   });
+   
+   if (!result.canceled) {
+    if (!this.props.route.params.address.includes('x')){
+      result.assets.forEach(e => {
+        const data = new FormData()
+        data.append('photo', {
+            uri: e.uri,
+            type: 'image/jpeg',
+            name: e.uri.substr(e.uri.lastIndexOf('/'), e.uri.length)
+        })
+        // console.log(photo);
+        console.log(e);
+        fetch(this.props.route.params.address, {
+            method: 'POST',
+            body: data
+        })  
+      })
+    }
+    else {
+      ToastAndroid.showWithGravity(
+        'go to settings and type in your ip',
+        ToastAndroid.SHORT,
+        ToastAndroid.CENTER
+      );
+    }
+   }
   }
 }
 
