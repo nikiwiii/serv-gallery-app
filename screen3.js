@@ -57,7 +57,7 @@ class Screen3 extends React.Component {
             style={{ flex: 1 }}
           >
             <Pressable onPress={() => this.openPicker()} style={[styles.buttons, { position: 'absolute', right: 20, top: 20, height: 50, width: 50 }]}>
-              <Text style={[styles.text, { lineHeight: 60, paddingRight: 2.7 }]}>⇣</Text>
+              <Text style={[styles.text, { lineHeight: 60, paddingRight: 2.7, color: 'dimgray' }]}>⇣</Text>
             </Pressable>
 
             <View style={{ flex: 1, display: 'flex', flexDirection: 'row', justifyContent: 'space-around' }}>
